@@ -206,7 +206,7 @@ rollingCV <- function(starting_time_point = 5,
         best_predictions_SGPC <- gee_predictions(object = fit_gees, newdata = test_dat %>% select(-size), intervals = TRUE)
         
         
-        #' ## Fit GLMM to training data, assuming either random intercept or random intercept plus slope for time. Then construct conditional predictions to test data
+        #' ## Fit independent cluster generalized linear mixed models (GLMM) to training data, assuming either random intercept or random intercept plus slope for time. Then construct conditional predictions to test data
         fit_glmm <- glmmTMB(update.formula(GEE_formula, ~ . + (1|id)), 
                             data = train_dat, 
                             family = response_type)   
