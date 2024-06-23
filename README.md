@@ -10,7 +10,6 @@
 
 This is a Github repository associated with the manuscript "Adjusted Predictions for Generalized Estimating Equations" by [Hui](https://francishui.netlify.app/), [Mueller](https://researchers.mq.edu.au/en/persons/samuel-muller), and [Welsh](https://cbe.anu.edu.au/about/staff-directory/professor-alan-welsh), which is currently in review. As the name suggests, the repository contains code for being able to constructed an adjusted form of prediction for independent cluster GEEs, based on exploiting the assumed working cross-correlations between the current and new observations within the same cluster.
 
-````{=html}
 <!-- # Installation
 
 Currently, `COQUE` is available and can be installed from github with the help of `devtools` package using:
@@ -21,7 +20,6 @@ devtools::install_github("fhui28/COQUE")
 
 Alternatively, or if the above does not work, you may download a (hopefully!) stable release of `COQUE` by choosing the latest release on the right hand side of this Github webpage.
 -->
-````
 
 # Getting started
 
