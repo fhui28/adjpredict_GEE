@@ -33,8 +33,6 @@ make_summary <- function(results_long) {
                 RMSE_sd = sd(RMSE, na.rm = TRUE),
                 MAE_mean = mean(MAE, na.rm = TRUE),
                 MAE_sd = sd(MAE, na.rm = TRUE),
-                deviance_mean = mean(deviance, na.rm = TRUE),
-                deviance_sd = mean(deviance, na.rm = TRUE),
                 pearson_cor_mean = mean(pearson_cor, na.rm = TRUE),
                 pearson_cor_sd = sd(pearson_cor, na.rm = TRUE),
                 spearman_cor_mean = mean(spearman_cor, na.rm = TRUE),
