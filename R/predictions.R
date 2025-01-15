@@ -106,6 +106,7 @@ gee_predictions <- function(object,
             make_adjusted_pred[!check_issues] <- object$family$linkinv(linpred)[!check_issues] 
             
             
+            #' Note the code can be modified below to construct uncertainty regions by examining the full matrices of T1 to T3 instead of just the diagonals. However, we have not done so here.
             if(intervals) {
                 T1 <- diag(rootA_test %*% fullmargcorr[num_train + 1:num_test, num_train + 1:num_test] %*% rootA_test)
                 T2 <- diag(rootA_test %*% crossprod(fullmargcorr[1:num_train, num_train + 1:num_test], trainmargcov_inv) %*% fullmargcorr[1:num_train, num_train + 1:num_test] %*% rootA_test)
