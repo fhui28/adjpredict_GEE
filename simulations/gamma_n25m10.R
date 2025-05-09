@@ -9,6 +9,7 @@ rm(list = ls())
 library(tidyverse)
 library(colorspace)
 library(patchwork)
+library(ggpattern)
 library(mvtnorm)
 library(doParallel)
 library(abind)
@@ -94,16 +95,17 @@ make_summary(results_long = all_results_long)
 
 all_results_long <- all_results_long %>% 
     filter(selection_method %in% c("SGPC", "Oracle")) %>% 
-    select(-c(MAE, tjurR2)) %>% 
-    filter(RMSE < 25) # Remove crazy outliers in the standard GEE prediction
+    select(-c(MAE, tjurR2)) 
 
 
 p1 <- ggplot(all_results_long %>% 
+                 mutate(isadjusted = (type == "Adjusted")) %>% 
                  pivot_longer(RMSE:spearman_cor, names_to = "criteria") %>% 
                  mutate(criteria = fct_recode(criteria, "Pearson correlation" = "pearson_cor", "Spearman correlation" = "spearman_cor")) %>% 
                  mutate(criteria = fct_inorder(criteria)),
-             aes(x = type, y = value)) +
-    geom_boxplot(notch = FALSE) +
+             aes(x = type, y = value, pattern = isadjusted)) +
+    geom_boxplot_pattern(notch = FALSE) +
+    scale_pattern_manual(values = c("none", "crosshatch")) +
     facet_grid(criteria ~ ., scales = "free") +
     labs(x = "Method", y = "Value", color = "Prediction type", title = "AR(1) marginal correlation") + 
     theme_bw() +
@@ -185,11 +187,11 @@ make_summary(results_long = all_results_long)
 
 all_results_long <- all_results_long %>% 
     filter(selection_method %in% c("SGPC", "Oracle")) %>% 
-    select(-c(MAE, deviance, tjurR2)) %>% 
-    filter(RMSE < 25) # Remove crazy standard GEE predictions
+    select(-c(MAE, deviance, tjurR2)) 
 
 
 p2 <- ggplot(all_results_long %>% 
+                 mutate(isadjusted = (type == "Adjusted")) %>% 
                  pivot_longer(RMSE:spearman_cor, names_to = "criteria") %>% 
                  mutate(criteria = fct_recode(criteria, "Pearson correlation" = "pearson_cor", "Spearman correlation" = "spearman_cor")) %>% 
                  mutate(criteria = fct_inorder(criteria)),
@@ -275,16 +277,17 @@ make_summary(results_long = all_results_long)
 
 all_results_long <- all_results_long %>% 
     filter(selection_method %in% c("SGPC")) %>% 
-    select(-c(MAE, tjurR2)) %>% 
-    filter(RMSE < 25) # Remove crazy standard GEE predictions  
+    select(-c(MAE, tjurR2)) 
 
 
 p3 <- ggplot(all_results_long %>% 
+                 mutate(isadjusted = (type == "Adjusted")) %>% 
                  pivot_longer(RMSE:spearman_cor, names_to = "criteria") %>% 
                  mutate(criteria = fct_recode(criteria, "Pearson correlation" = "pearson_cor", "Spearman correlation" = "spearman_cor")) %>% 
                  mutate(criteria = fct_inorder(criteria)),
-             aes(x = type, y = value)) +
-    geom_boxplot(notch = FALSE) +
+             aes(x = type, y = value, pattern = isadjusted)) +
+    geom_boxplot_pattern(notch = FALSE) +
+    scale_pattern_manual(values = c("none", "crosshatch")) +
     facet_grid(criteria ~ ., scales = "free") +
     labs(x = "Method", y = "Value", color = "Prediction type", title = "Toeplitz marginal correlation") + 
     theme_bw() +
@@ -371,11 +374,13 @@ all_results_long <- all_results_long %>%
 
 
 p4 <- ggplot(all_results_long %>% 
+                 mutate(isadjusted = (type == "Adjusted")) %>% 
                  pivot_longer(RMSE:spearman_cor, names_to = "criteria") %>% 
                  mutate(criteria = fct_recode(criteria, "Pearson correlation" = "pearson_cor", "Spearman correlation" = "spearman_cor")) %>% 
                  mutate(criteria = fct_inorder(criteria)),
-             aes(x = type, y = value)) +
-    geom_boxplot(notch = FALSE) +
+             aes(x = type, y = value, pattern = isadjusted)) +
+    geom_boxplot_pattern(notch = FALSE) +
+    scale_pattern_manual(values = c("none", "crosshatch")) +
     facet_grid(criteria ~ ., scales = "free") +
     labs(x = "Method", y = "Value", color = "Prediction type", title = "Unstructured marginal correlation") + 
     theme_bw() +
@@ -389,97 +394,6 @@ sapply(all_results, function(x) x$out_UI) %>%
     summary
 
 
-
-
-
-
-
-set.seed(112023)
-num_clus <- 25
-clus_size <- 10
-response_type <- Gamma(link = "log")
-dat <- data.frame(id = rep(1:num_clus, each = clus_size), time = 1:clus_size)
-true_correlation_structure <- "unstructured"
-
-
-#' ## Generate the X covariates, which stay the same throughout the simulation
-partX <- rmvnorm(nrow(dat), sigma = matrix(c(0.5,0.2,0.2,0.5), nrow = 2))
-X <- data.frame(treatment = rep(rbinom(num_clus, size = 1, prob = 0.5), each = clus_size),
-                x1 = partX[,1],
-                x2 = partX[,2])
-true_fixed_effects <- c(1, 0.5, 0.1, 0.25, -0.25, -0.1)
-dat <- cbind(dat, X)
-SigmaR0 <- .calc_marginal_correlation(structure = "ar1",
-                                      num_train = 5,
-                                      num_test = 5,
-                                      alpha = 0.5)
-true_R0 <- rWishart(1, df = 10, Sigma = SigmaR0)[,,1] %>% 
-    cov2cor
-rm(X, partX)
-
-
-#' ## Do the simulation!
-#' Dataset 273 hangs due to fitting GEE (at least on the session information given below) 
-formula_X <- ~ 1 + treatment*time + x1 + x2 
-all_results <- foreach(k0 = (1:1000)[-c(273)]) %dopar% sim_fn(k0 = k0,
-                                                     formula_X = formula_X,
-                                                     fixed_effects = true_fixed_effects,
-                                                     data = dat,
-                                                     margcor = true_R0,
-                                                     family = response_type,
-                                                     training_timepoints = 1:5,
-                                                     test_timepoints = 6:10,
-                                                     true_correlation_structure = "ar1")
-save(all_results, file = here("simulations", "gammaresp_unstrucmargcor_n25m10.RData"))
-
-
-
-#' ## Correlation structure selection results
-#correlation_structure_choices <- c("independence", "ar1", "exchangeable")
-sapply(all_results, function(x) x$selected_correlation_structure) %>% 
-    t %>% 
-    apply(., 2, table)
-true_correlation_structure
-
-
-#' ## Prediction results
-all_results_long <- do.call(rbind, lapply(all_results, function(x) x$out)) %>% 
-    mutate(dataset = rep(1:length(all_results), each = nrow(.)/length(all_results))) %>% 
-    mutate(selection_method = rep(rep(c("QIC", "CIC", "PAC", "GYHC", "RJC", "AGPC", "SGPC", "Oracle", "GLMM"), c(2,2,2,2,2,2,2,1,1)), length(all_results))) %>%
-    mutate(selection_method = fct_inorder(selection_method)) %>% 
-    mutate(type = rep(c(rep(c("Standard","Adjusted"), 7), "Oracle", "GLMM"), length(all_results))) %>% 
-    mutate(type = fct_inorder(type)) %>% 
-    mutate(dataset = factor(dataset)) %>% 
-    dplyr::select(-method) %>% 
-    filter(type != "Oracle") %>% 
-    relocate(dataset, selection_method, type) 
-
-
-make_summary(results_long = all_results_long)
-
-
-all_results_long <- all_results_long %>% 
-    filter(selection_method %in% c("SGPC")) %>% 
-    select(-c(MAE, deviance, tjurR2)) %>% 
-    filter(RMSE < 30) # Remove crazy standard GEE predictions
-
-
-p4 <- ggplot(all_results_long %>% 
-                 pivot_longer(RMSE:spearman_cor, names_to = "criteria") %>% 
-                 mutate(criteria = fct_recode(criteria, "Pearson correlation" = "pearson_cor", "Spearman correlation" = "spearman_cor")) %>% 
-                 mutate(criteria = fct_inorder(criteria)),
-             aes(x = type, y = value)) +
-    geom_boxplot(notch = FALSE) +
-    facet_grid(criteria ~ ., scales = "free") +
-    labs(x = "Method", y = "Value", color = "Prediction type", title = "Unstructured marginal correlation") + 
-    theme_bw() +
-    theme(legend.position = "bottom")
-
-p4
-
-sapply(all_results, function(x) x$out_UI) %>% 
-    t %>% 
-    summary
 
 
 

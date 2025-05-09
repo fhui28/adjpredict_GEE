@@ -9,6 +9,7 @@ rm(list = ls())
 library(tidyverse)
 library(colorspace)
 library(patchwork)
+library(ggpattern)
 library(mvtnorm)
 library(doParallel)
 library(abind)
@@ -98,11 +99,13 @@ all_results_long <- all_results_long %>%
 
 
 p1 <- ggplot(all_results_long %>% 
+                 mutate(isadjusted = (type == "Adjusted")) %>% 
                  pivot_longer(RMSE:tjurR2, names_to = "criteria") %>% 
                  mutate(criteria = fct_recode(criteria, "Pearson correlation" = "pearson_cor", "Tjur R2" = "tjurR2")) %>% 
                  mutate(criteria = fct_inorder(criteria)),
-             aes(x = type, y = value)) +
-    geom_boxplot(notch = FALSE) +
+             aes(x = type, y = value, pattern = isadjusted)) +
+    geom_boxplot_pattern(notch = FALSE) +
+    scale_pattern_manual(values = c("none", "crosshatch")) +
     facet_grid(criteria ~ ., scales = "free") +
     labs(x = "Method", y = "Value", color = "Prediction type", title = "AR(1) marginal correlation") + 
     theme_bw() +
@@ -187,11 +190,13 @@ all_results_long <- all_results_long %>%
 
 
 p2 <- ggplot(all_results_long %>% 
+                 mutate(isadjusted = (type == "Adjusted")) %>% 
                  pivot_longer(RMSE:tjurR2, names_to = "criteria") %>% 
                  mutate(criteria = fct_recode(criteria, "Pearson correlation" = "pearson_cor", "Tjur R2" = "tjurR2")) %>% 
                  mutate(criteria = fct_inorder(criteria)),
-             aes(x = type, y = value)) +
-    geom_boxplot(notch = FALSE) +
+             aes(x = type, y = value, pattern = isadjusted)) +
+    geom_boxplot_pattern(notch = FALSE) +
+    scale_pattern_manual(values = c("none", "crosshatch")) +
     facet_grid(criteria ~ ., scales = "free") +
     labs(x = "Method", y = "Value", color = "Prediction type", title = "Exchangeable marginal correlation") + 
     theme_bw() +
@@ -275,11 +280,13 @@ all_results_long <- all_results_long %>%
 
 
 p3 <- ggplot(all_results_long %>% 
+                 mutate(isadjusted = (type == "Adjusted")) %>% 
                  pivot_longer(RMSE:tjurR2, names_to = "criteria") %>% 
                  mutate(criteria = fct_recode(criteria, "Pearson correlation" = "pearson_cor", "Tjur R2" = "tjurR2")) %>% 
                  mutate(criteria = fct_inorder(criteria)),
-             aes(x = type, y = value)) +
-    geom_boxplot(notch = FALSE) +
+             aes(x = type, y = value, pattern = isadjusted)) +
+    geom_boxplot_pattern(notch = FALSE) +
+    scale_pattern_manual(values = c("none", "crosshatch")) +
     facet_grid(criteria ~ ., scales = "free") +
     labs(x = "Method", y = "Value", color = "Prediction type", title = "Toeplitz marginal correlation") + 
     theme_bw() +
@@ -366,11 +373,13 @@ all_results_long <- all_results_long %>%
     select(-c(MAE, spearman_cor))
 
 p4 <- ggplot(all_results_long %>% 
+                 mutate(isadjusted = (type == "Adjusted")) %>% 
                  pivot_longer(RMSE:tjurR2, names_to = "criteria") %>% 
                  mutate(criteria = fct_recode(criteria, "Pearson correlation" = "pearson_cor", "Tjur R2" = "tjurR2")) %>% 
                  mutate(criteria = fct_inorder(criteria)),
-             aes(x = type, y = value)) +
-    geom_boxplot(notch = FALSE) +
+             aes(x = type, y = value, pattern = isadjusted)) +
+    geom_boxplot_pattern(notch = FALSE) +
+    scale_pattern_manual(values = c("none", "crosshatch")) +
     facet_grid(criteria ~ ., scales = "free") +
     labs(x = "Method", y = "Value", color = "Prediction type", title = "Unstructured marginal correlation") + 
     theme_bw() +
