@@ -8,7 +8,7 @@
 
 <!-- badges: end -->
 
-This is a Github repository associated with the manuscript "Adjusted Predictions for Generalized Estimating Equations" by [Hui](https://francishui.netlify.app/), [Mueller](https://researchers.mq.edu.au/en/persons/samuel-muller), and [Welsh](https://cbe.anu.edu.au/about/staff-directory/professor-alan-welsh), which is currently under revision. As the name suggests, the repository contains code for being able to constructed an adjusted form of prediction for independent cluster GEEs, based on exploiting the assumed working cross-correlations between the current and new observations within the same cluster.
+This is a Github repository associated with the manuscript "Adjusted Predictions for Generalized Estimating Equations" by [Hui](https://francishui.netlify.app/), [Mueller](https://researchers.mq.edu.au/en/persons/samuel-muller), and [Welsh](https://cbe.anu.edu.au/about/staff-directory/professor-alan-welsh), which is accepted for publicationv in *Biometrics*. As the name suggests, the repository contains code for being able to constructed an adjusted form of prediction for independent cluster GEEs, based on exploiting the assumed working cross-correlations between the current and new observations within the same cluster.
 
 # Getting started
 
